@@ -20,6 +20,7 @@ export default function Home() {
   const [text, setText] = useState("");
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [profileSrc, setProfileSrc] = useState("/colored.png");
 
   // Load from Supabase and subscribe to realtime
   useEffect(() => {
@@ -105,7 +106,7 @@ export default function Home() {
           <Card>
             <CardContent className="p-3">
               <div className="w-full bg-gray-200 flex items-center justify-center overflow-hidden" style={{aspectRatio: "3/4"}}>
-                <Image src="/colored.jpg" width={400} height={520} alt="Profile photo" className="w-full h-full object-cover" />
+                <Image src={profileSrc} width={400} height={520} alt="Profile photo" className="w-full h-full object-cover" onError={() => setProfileSrc("/colored.jpg")} />
               </div>
               <div className="mt-3 space-y-1">
                 <SidebarLink>View Photos of Karl (541)</SidebarLink>
