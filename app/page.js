@@ -108,10 +108,10 @@ export default function Home() {
                 <Image src="/colored.jpg" width={400} height={520} alt="Profile photo" className="w-full h-full object-cover" />
               </div>
               <div className="mt-3 space-y-1">
-                <SidebarLink>View Photos of Mark (541)</SidebarLink>
-                <SidebarLink>View Videos of Mark (14)</SidebarLink>
-                <SidebarLink>Send Mark a Message</SidebarLink>
-                <SidebarLink>Poke Mark</SidebarLink>
+                <SidebarLink>View Photos of Karl (541)</SidebarLink>
+                <SidebarLink>View Videos of Karl (14)</SidebarLink>
+                <SidebarLink>Send Karl a Message</SidebarLink>
+                <SidebarLink>Poke Karl</SidebarLink>
                 <SidebarLink>Subscribe via SMS</SidebarLink>
               </div>
             </CardContent>
@@ -141,7 +141,7 @@ export default function Home() {
         {/* Middle column */}
         <div className="col-span-6 space-y-4">
           <div className="flex items-center gap-4">
-            <h1 className="text-2xl font-semibold">Mark Zuckerberg</h1>
+            <h1 className="text-2xl font-semibold">Karl Louise Campos</h1>
             <Badge variant="secondary" className="uppercase">Wall</Badge>
             <Badge variant="secondary">Info</Badge>
             <Badge variant="secondary">Photos</Badge>
