@@ -42,7 +42,7 @@ export default function Home() {
           <Card>
             <CardContent className="p-3">
               <div className="w-full bg-gray-200 flex items-center justify-center overflow-hidden" style={{aspectRatio: "3/4"}}>
-                <Image src="/profile-placeholder.svg" width={400} height={520} alt="Profile placeholder" className="w-full h-full object-cover" />
+                <Image src="/colored.jpg" width={400} height={520} alt="Profile photo" className="w-full h-full object-cover" />
               </div>
               <div className="mt-3 space-y-1">
                 <SidebarLink>View Photos of Mark (541)</SidebarLink>
