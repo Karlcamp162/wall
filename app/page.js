@@ -20,7 +20,8 @@ export default function Home() {
   const [text, setText] = useState("");
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [profileSrc, setProfileSrc] = useState("/colored.png");
+  const profileSources = ["/colored.png", "/colored.jpg", "/profile-placeholder.svg"];
+  const [profileSrcIndex, setProfileSrcIndex] = useState(0);
   const [file, setFile] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -68,10 +69,15 @@ export default function Home() {
 
   const remaining = useMemo(() => 280 - text.length, [text]);
 
+  const envMissing = !process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
   const handleShare = async () => {
     if (!name.trim() || !text.trim() || text.length > 280) return;
     const supabase = getSupabaseClient();
-    if (!supabase) return;
+    if (!supabase || envMissing) {
+      setError("Supabase is not configured. Add env vars in Vercel and run database_setup.sql.");
+      return;
+    }
     setSubmitting(true);
     setError("");
     let image_url = null;
@@ -128,7 +134,14 @@ export default function Home() {
           <Card>
             <CardContent className="p-3">
               <div className="w-full bg-gray-200 flex items-center justify-center overflow-hidden" style={{aspectRatio: "3/4"}}>
-                <Image src={profileSrc} width={400} height={520} alt="Profile photo" className="w-full h-full object-cover" onError={() => setProfileSrc("/colored.jpg")} />
+                <Image
+                  src={profileSources[profileSrcIndex]}
+                  width={400}
+                  height={520}
+                  alt="Profile photo"
+                  className="w-full h-full object-cover"
+                  onError={() => setProfileSrcIndex((i) => Math.min(i + 1, profileSources.length - 1))}
+                />
               </div>
               <div className="mt-3 space-y-1">
                 <SidebarLink>View Photos of Karl (541)</SidebarLink>
@@ -230,6 +243,11 @@ export default function Home() {
                       <div className="text-sm text-gray-800 break-words whitespace-pre-wrap">
                         {m.text}
                       </div>
+                      {m.image_url ? (
+                        <div className="mt-2">
+                          <Image src={m.image_url} alt="Attachment" width={600} height={400} className="w-full h-auto rounded border" />
+                        </div>
+                      ) : null}
                     </div>
                   </div>
                 ))
