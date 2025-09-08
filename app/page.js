@@ -9,59 +9,66 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { getSupabaseClient } from "@/lib/supabaseClient";
 
 const SidebarLink = ({ children }) => (
   <a className="text-sm text-blue-700 hover:underline" href="#">{children}</a>
 );
 
-const STORAGE_KEY = "wall_messages_v1";
-
 export default function Home() {
   const [name, setName] = useState("");
   const [text, setText] = useState("");
   const [messages, setMessages] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  // Load messages from localStorage on mount
+  // Load from Supabase and subscribe to realtime
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed)) setMessages(parsed);
-      }
-    } catch {}
+    const supabase = getSupabaseClient();
+    if (!supabase) return;
 
-    // Sync across tabs
-    const onStorage = (e) => {
-      if (e.key === STORAGE_KEY && e.newValue) {
-        try {
-          const parsed = JSON.parse(e.newValue);
-          if (Array.isArray(parsed)) setMessages(parsed);
-        } catch {}
+    const load = async () => {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from("messages")
+        .select("id, name, text, created_at")
+        .order("created_at", { ascending: false })
+        .limit(100);
+      if (!error && Array.isArray(data)) {
+        // Normalize to createdAt for UI
+        setMessages(data.map((d) => ({ id: d.id, name: d.name, text: d.text, createdAt: d.created_at })));
       }
+      setLoading(false);
     };
-    window.addEventListener("storage", onStorage);
-    return () => window.removeEventListener("storage", onStorage);
-  }, []);
 
-  // Persist whenever messages change
-  useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
-    } catch {}
-  }, [messages]);
+    load();
+
+    const channel = supabase
+      .channel("messages-feed")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "messages" },
+        (payload) => {
+          const m = payload.new;
+          setMessages((prev) => [
+            { id: m.id, name: m.name, text: m.text, createdAt: m.created_at },
+            ...prev,
+          ]);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
   const remaining = useMemo(() => 280 - text.length, [text]);
 
-  const handleShare = () => {
+  const handleShare = async () => {
     if (!name.trim() || !text.trim() || text.length > 280) return;
-    const entry = {
-      id: Date.now(),
-      name: name.trim(),
-      text: text.trim(),
-      createdAt: new Date().toISOString(),
-    };
-    setMessages((prev) => [entry, ...prev]);
+    const supabase = getSupabaseClient();
+    if (!supabase) return;
+    await supabase.from("messages").insert({ name: name.trim(), text: text.trim() });
     setText("");
   };
 
@@ -152,8 +159,8 @@ export default function Home() {
                   />
                   <Textarea
                     value={text}
-                    onChange={(e) => setText(e.target.value.slice(0, 600))}
-                    maxLength={600}
+                    onChange={(e) => setText(e.target.value.slice(0, 280))}
+                    maxLength={280}
                     placeholder="Write something... (max 280 characters)"
                     className="min-h-20"
                   />
@@ -179,7 +186,9 @@ export default function Home() {
           {/* Posts feed (newest first) */}
           <Card>
             <CardContent className="p-4 space-y-5">
-              {messages.length === 0 ? (
+              {loading ? (
+                <div className="text-sm text-gray-600">Loading messages…</div>
+              ) : messages.length === 0 ? (
                 <div className="text-sm text-gray-600">No messages yet. Be the first to post.</div>
               ) : (
                 messages.map((m) => (

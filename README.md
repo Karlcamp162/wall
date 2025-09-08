@@ -1,3 +1,38 @@
+## Supabase Setup
+
+1. Create a Supabase project and copy the Project URL and anon key.
+2. In local dev, create a file `.env.local` with:
+
+```
+NEXT_PUBLIC_SUPABASE_URL=your-url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+```
+
+3. In Supabase SQL editor, create the table and policies:
+
+```sql
+create table if not exists messages (
+  id bigserial primary key,
+  name text not null check (char_length(name) <= 100),
+  text text not null check (char_length(text) <= 280),
+  created_at timestamp with time zone default now() not null
+);
+
+-- Enable RLS
+alter table messages enable row level security;
+
+-- Public can read and insert (demo). Tighten later with auth.
+create policy "Public read" on messages for select using (true);
+create policy "Public insert" on messages for insert with check (true);
+
+-- Realtime
+alter publication supabase_realtime add table messages;
+```
+
+4. On Vercel, add environment variables to the project settings with the same names.
+
+The app writes to `messages` and streams realtime inserts to update the feed instantly.
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
 ## Getting Started
