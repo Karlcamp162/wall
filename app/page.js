@@ -21,6 +21,9 @@ export default function Home() {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [profileSrc, setProfileSrc] = useState("/colored.png");
+  const [file, setFile] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
 
   // Load from Supabase and subscribe to realtime
   useEffect(() => {
@@ -69,8 +72,27 @@ export default function Home() {
     if (!name.trim() || !text.trim() || text.length > 280) return;
     const supabase = getSupabaseClient();
     if (!supabase) return;
-    await supabase.from("messages").insert({ name: name.trim(), text: text.trim() });
-    setText("");
+    setSubmitting(true);
+    setError("");
+    let image_url = null;
+    try {
+      if (file) {
+        const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+        const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+        const { error: upErr } = await supabase.storage.from("wall-images").upload(path, file, { upsert: false, cacheControl: "3600" });
+        if (upErr) throw upErr;
+        const { data } = supabase.storage.from("wall-images").getPublicUrl(path);
+        image_url = data?.publicUrl || null;
+      }
+      const { error: insErr } = await supabase.from("messages").insert({ name: name.trim(), text: text.trim(), image_url });
+      if (insErr) throw insErr;
+      setText("");
+      setFile(null);
+    } catch (e) {
+      setError("Failed to share. Check Supabase setup and bucket policies.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const initials = (fullName) => {
@@ -170,10 +192,12 @@ export default function Home() {
                       {remaining} characters left
                     </div>
                     <div className="flex gap-2">
-                      <Button onClick={handleShare} disabled={!name.trim() || !text.trim() || remaining < 0}>Share</Button>
-                      <Button variant="outline" onClick={() => setText("")}>Clear</Button>
+                      <input type="file" accept="image/*" onChange={(e) => setFile(e.target.files?.[0] || null)} className="text-xs" />
+                      <Button onClick={handleShare} disabled={submitting || !name.trim() || !text.trim() || remaining < 0}>{submitting ? "Sharing..." : "Share"}</Button>
+                      <Button variant="outline" onClick={() => { setText(""); setFile(null); }}>Clear</Button>
                     </div>
                   </div>
+                  {error && <div className="text-xs text-red-600">{error}</div>}
                 </div>
               </div>
               <Separator />
