@@ -97,7 +97,7 @@ export default function Home() {
               <Separator />
               <div className="text-sm text-gray-600">Recent Activity</div>
               <div className="text-sm">
-                Mark likes Nick Schrock's photo. Mark likes Bubba Murarka's album Wall Photos.
+                Mark likes Nick Schrock&apos;s photo. Mark likes Bubba Murarka&apos;s album Wall Photos.
               </div>
             </CardContent>
           </Card>
@@ -117,7 +117,7 @@ export default function Home() {
                       <span className="text-gray-500">June {i} at 12:02am</span>
                     </div>
                     <div className="text-sm text-gray-800">
-                      Photowalk around Facebook's new headquarters
+                      Photowalk around Facebook&apos;s new headquarters
                     </div>
                     <div className="grid grid-cols-3 gap-2 mt-2">
                       <div className="bg-gray-200 aspect-video" />
