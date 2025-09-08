@@ -87,11 +87,13 @@ export default function Home() {
           </div>
           <Card>
             <CardContent className="p-3 space-y-3">
-              <div className="flex items-center gap-2">
-                <Textarea placeholder="Write something..." className="min-h-20" />
-                <div className="flex flex-col gap-2">
-                  <Button>Share</Button>
-                  <Button variant="outline">Attach</Button>
+              <div className="flex items-start gap-2">
+                <div className="flex flex-col gap-2 w-full">
+                  <Textarea placeholder="Write something..." className="min-h-20" />
+                  <div className="flex gap-2">
+                    <Button>Share</Button>
+                    <Button variant="outline">Attach</Button>
+                  </div>
                 </div>
               </div>
               <Separator />
