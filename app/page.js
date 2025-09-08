@@ -20,7 +20,7 @@ export default function Home() {
   const [text, setText] = useState("");
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
-  const profileSources = ["/colored.png", "/colored.jpg", "/profile-placeholder.svg"];
+  const profileSources = ["/colored.jpg", "/colored.jpg", "/profile-placeholder.svg"];
   const [profileSrcIndex, setProfileSrcIndex] = useState(0);
   const [file, setFile] = useState(null);
   const [submitting, setSubmitting] = useState(false);
