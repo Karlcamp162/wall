@@ -1,4 +1,5 @@
 "use client";
+import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -13,7 +14,62 @@ const SidebarLink = ({ children }) => (
   <a className="text-sm text-blue-700 hover:underline" href="#">{children}</a>
 );
 
+const STORAGE_KEY = "wall_messages_v1";
+
 export default function Home() {
+  const [name, setName] = useState("");
+  const [text, setText] = useState("");
+  const [messages, setMessages] = useState([]);
+
+  // Load messages from localStorage on mount
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) setMessages(parsed);
+      }
+    } catch {}
+
+    // Sync across tabs
+    const onStorage = (e) => {
+      if (e.key === STORAGE_KEY && e.newValue) {
+        try {
+          const parsed = JSON.parse(e.newValue);
+          if (Array.isArray(parsed)) setMessages(parsed);
+        } catch {}
+      }
+    };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
+
+  // Persist whenever messages change
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
+    } catch {}
+  }, [messages]);
+
+  const remaining = useMemo(() => 280 - text.length, [text]);
+
+  const handleShare = () => {
+    if (!name.trim() || !text.trim() || text.length > 280) return;
+    const entry = {
+      id: Date.now(),
+      name: name.trim(),
+      text: text.trim(),
+      createdAt: new Date().toISOString(),
+    };
+    setMessages((prev) => [entry, ...prev]);
+    setText("");
+  };
+
+  const initials = (fullName) => {
+    const parts = fullName.split(/\s+/).filter(Boolean);
+    return (parts[0]?.[0] || "?") + (parts[1]?.[0] || "");
+  };
+
   return (
     <div className="min-h-screen bg-[#e6edf5]">
       {/* Top blue bar */}
@@ -89,10 +145,26 @@ export default function Home() {
             <CardContent className="p-3 space-y-3">
               <div className="flex items-start gap-2">
                 <div className="flex flex-col gap-2 w-full">
-                  <Textarea placeholder="Write something..." className="min-h-20" />
-                  <div className="flex gap-2">
-                    <Button>Share</Button>
-                    <Button variant="outline">Attach</Button>
+                  <Input
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="Your name"
+                  />
+                  <Textarea
+                    value={text}
+                    onChange={(e) => setText(e.target.value.slice(0, 600))}
+                    maxLength={600}
+                    placeholder="Write something... (max 280 characters)"
+                    className="min-h-20"
+                  />
+                  <div className="flex items-center justify-between">
+                    <div className={`text-xs ${remaining < 0 ? "text-red-600" : "text-gray-600"}`}>
+                      {remaining} characters left
+                    </div>
+                    <div className="flex gap-2">
+                      <Button onClick={handleShare} disabled={!name.trim() || !text.trim() || remaining < 0}>Share</Button>
+                      <Button variant="outline" onClick={() => setText("")}>Clear</Button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -104,32 +176,30 @@ export default function Home() {
             </CardContent>
           </Card>
 
-          {/* Posts */}
+          {/* Posts feed (newest first) */}
           <Card>
             <CardContent className="p-4 space-y-5">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="flex gap-3">
-                  <Avatar>
-                    <AvatarImage src="" />
-                    <AvatarFallback>MZ</AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 space-y-1">
-                    <div className="flex items-center gap-2 text-sm">
-                      <span className="font-semibold">Mark Zuckerberg</span>
-                      <span className="text-gray-500">June {i} at 12:02am</span>
+              {messages.length === 0 ? (
+                <div className="text-sm text-gray-600">No messages yet. Be the first to post.</div>
+              ) : (
+                messages.map((m) => (
+                  <div key={m.id} className="flex gap-3">
+                    <Avatar>
+                      <AvatarImage src="" />
+                      <AvatarFallback>{initials(m.name)}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 space-y-1">
+                      <div className="flex items-center gap-2 text-sm">
+                        <span className="font-semibold">{m.name}</span>
+                        <span className="text-gray-500">{new Date(m.createdAt).toLocaleString()}</span>
+                      </div>
+                      <div className="text-sm text-gray-800 break-words whitespace-pre-wrap">
+                        {m.text}
+                      </div>
                     </div>
-                    <div className="text-sm text-gray-800">
-                      Photowalk around Facebook&apos;s new headquarters
-                    </div>
-                    <div className="grid grid-cols-3 gap-2 mt-2">
-                      <div className="bg-gray-200 aspect-video" />
-                      <div className="bg-gray-200 aspect-video" />
-                      <div className="bg-gray-200 aspect-video" />
-                    </div>
-                    <div className="text-xs text-gray-600 mt-1">View album</div>
                   </div>
-                </div>
-              ))}
+                ))
+              )}
             </CardContent>
           </Card>
         </div>
