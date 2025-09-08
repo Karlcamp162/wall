@@ -41,8 +41,8 @@ export default function Home() {
         <div className="col-span-3 space-y-4">
           <Card>
             <CardContent className="p-3">
-              <div className="aspect-square w-full bg-gray-200 flex items-center justify-center">
-                <Image src="/next.svg" width={120} height={120} alt="profile" className="opacity-30" />
+              <div className="w-full bg-gray-200 flex items-center justify-center overflow-hidden" style={{aspectRatio: "3/4"}}>
+                <Image src="/profile-placeholder.svg" width={400} height={520} alt="Profile placeholder" className="w-full h-full object-cover" />
               </div>
               <div className="mt-3 space-y-1">
                 <SidebarLink>View Photos of Mark (541)</SidebarLink>
