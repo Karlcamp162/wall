@@ -158,15 +158,15 @@ export default function Home() {
               <div className="font-semibold">Information</div>
               <div>
                 <div className="text-gray-500">Networks:</div>
-                <div>Facebook, Harvard Alum</div>
+                <div>CITE, NEMSU</div>
               </div>
               <div>
                 <div className="text-gray-500">Birthday:</div>
-                <div>May 14, 1984</div>
+                <div>Nov 16, 2003</div>
               </div>
               <div>
                 <div className="text-gray-500">Current City:</div>
-                <div>Palo Alto, CA</div>
+                <div>Tandag City</div>
               </div>
               <div className="pt-2 text-gray-500">Mutual friends</div>
               <div>287 friends in common</div>
@@ -216,7 +216,7 @@ export default function Home() {
               <Separator />
               <div className="text-sm text-gray-600">Recent Activity</div>
               <div className="text-sm">
-                Mark likes Nick Schrock&apos;s photo. Mark likes Bubba Murarka&apos;s album Wall Photos.
+                Karl Louise Campos liked a photo. Karl Louise Campos posted a new album.
               </div>
             </CardContent>
           </Card>
@@ -262,12 +262,16 @@ export default function Home() {
             <CardContent className="p-3">
               <div className="text-sm font-semibold">Advertise</div>
               <ScrollArea className="h-[520px] mt-2">
-                {["Scuba Diving Vacations","Hard Drive Imaging?","Wedding Card Box"].map((ad) => (
-                  <div key={ad} className="mb-4">
+                {[
+                  { src: "/ad1.png", title: "Campus Deals", desc: "Exclusive discounts for CITE students." },
+                  { src: "/ad2.png", title: "Tech Workshops", desc: "Level up your skills this weekend." },
+                  { src: "/ad3.png", title: "Local Eats", desc: "Best spots around Tandag City." },
+                ].map((ad) => (
+                  <div key={ad.src} className="mb-4">
                     <div className="bg-white rounded border p-2">
-                      <div className="bg-gray-200 h-28" />
-                      <div className="mt-2 text-sm font-medium">{ad}</div>
-                      <div className="text-xs text-gray-600">Sample ad copy to mirror the mock.</div>
+                      <Image src={ad.src} alt={ad.title} width={600} height={400} className="w-full h-auto rounded" />
+                      <div className="mt-2 text-sm font-medium">{ad.title}</div>
+                      <div className="text-xs text-gray-600">{ad.desc}</div>
                     </div>
                   </div>
                 ))}
